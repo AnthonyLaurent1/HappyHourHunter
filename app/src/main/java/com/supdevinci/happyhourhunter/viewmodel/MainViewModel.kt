@@ -24,6 +24,24 @@ class MainViewModel: ViewModel() {
     private val _detailState = MutableStateFlow< CocktailDetailState>(CocktailDetailState.Loading)
     val detailState: StateFlow<CocktailDetailState> = _detailState.asStateFlow()
 
+    private val _searchResults = MutableStateFlow<List<Drink>>(emptyList())
+    val searchResults: StateFlow<List<Drink>> = _searchResults.asStateFlow()
+
+    fun searchCocktails(name: String) {
+        viewModelScope.launch {
+            if (name.isBlank()) {
+                _searchResults.value = emptyList()
+                return@launch
+            }
+
+            try {
+                val response = RetrofitInstance.cocktailApi.searchCocktailsByName(name)
+                _searchResults.value = response.drinks ?: emptyList()
+            } catch (e: Exception) {
+                _searchResults.value = emptyList()
+            }
+        }
+    }
     fun fetchCocktailsForLocation(lat: Double, lon: Double, city: String) {
         lastLat = lat
         lastLon = lon

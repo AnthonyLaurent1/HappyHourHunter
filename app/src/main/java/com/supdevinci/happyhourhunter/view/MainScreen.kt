@@ -25,6 +25,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +48,8 @@ fun MainScreen(
     onCocktailClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    var searchQuery by remember { mutableStateOf("") }
 
     when (val currentState = state) {
         is CocktailWeatherState.Loading -> {
@@ -90,9 +95,11 @@ fun MainScreen(
                 )
 
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    readOnly = true,
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        viewModel.searchCocktails(it)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {
                         Icon(Icons.Outlined.Search, contentDescription = null)
@@ -101,15 +108,34 @@ fun MainScreen(
                     shape = RoundedCornerShape(18.dp)
                 )
 
-                Text("Cocktails populaires", fontWeight = FontWeight.Bold)
+                if (searchQuery.isNotBlank()) {
+                    Text("Résultats", fontWeight = FontWeight.Bold)
 
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(currentState.cocktails.take(3)) { drink ->
-                        CocktailCard(drink = drink) {
-                            onCocktailClick(drink.idDrink)
+                    if (searchResults.isEmpty()) {
+                        Text("Aucun cocktail trouvé", color = Color(0xFF666666))
+                    } else {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            items(searchResults.take(10)) { drink ->
+                                CocktailCard(drink = drink) {
+                                    onCocktailClick(drink.idDrink)
+                                }
+                            }
                         }
                     }
                 }
+
+                if (searchQuery.isBlank()) {
+                    Text("Cocktails populaires", fontWeight = FontWeight.Bold)
+
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(currentState.cocktails.take(3)) { drink ->
+                            CocktailCard(drink = drink) {
+                                onCocktailClick(drink.idDrink)
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
