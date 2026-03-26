@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -22,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.LocationServices
@@ -62,6 +65,8 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val backStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = backStackEntry?.destination?.route
+            val favorites by favoritesViewModel.favorites.collectAsStateWithLifecycle()
+            val favoritesCount = favorites.size
 
             HappyHourHunterTheme {
                 Scaffold(
@@ -84,9 +89,26 @@ class MainActivity : ComponentActivity() {
                             NavigationBarItem(
                                 selected = currentRoute == Routes.FAVORITES,
                                 onClick = { navController.navigate(Routes.FAVORITES) },
-                                icon = { Icon(Icons.Outlined.Favorite, contentDescription = null) },
+                                icon = {
+                                    BadgedBox(badge = {
+                                            if (favoritesCount > 0) {
+                                                Badge {
+                                                    Text(
+                                                        if (favoritesCount > 9) "9+"
+                                                        else favoritesCount.toString()
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.Favorite,
+                                            contentDescription = null)
+                                    }
+                                },
                                 label = { Text("Favoris") }
                             )
+
                         }
                     }
                 ) { innerPadding ->
