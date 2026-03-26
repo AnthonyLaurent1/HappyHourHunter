@@ -49,6 +49,9 @@ import com.supdevinci.happyhourhunter.utils.traductionMeasure
 import com.supdevinci.happyhourhunter.utils.traductionType
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.ui.platform.LocalContext
+import com.supdevinci.happyhourhunter.utils.shareCocktail
 
 @Composable
 fun CocktailDetailScreen(
@@ -58,6 +61,7 @@ fun CocktailDetailScreen(
 ) {
     val state by viewModel.detailState.collectAsStateWithLifecycle()
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     BackHandler { onBack() }
 
@@ -121,26 +125,56 @@ fun CocktailDetailScreen(
                             )
                         }
 
-                        Box(
+                        Row(
                             modifier = Modifier
                                 .statusBarsPadding()
                                 .padding(16.dp)
-                                .clip(CircleShape)
-                                .background(SurfaceWhite.copy(alpha = 0.9f))
-                                .clickable { viewModel.toggleFavorite() }
-                                .padding(10.dp)
-                                .align(Alignment.TopEnd)
+                                .align(Alignment.TopEnd),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = if (isFavorite) {
-                                    Icons.Outlined.Favorite
-                                } else {
-                                    Icons.Outlined.FavoriteBorder
-                                },
-                                contentDescription = "Favori",
-                                tint = if (isFavorite) ErrorRed else TextPrimary
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(SurfaceWhite.copy(alpha = 0.9f))
+                                    .clickable { shareCocktail(context, drink) }
+                                    .padding(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = "Partager",
+                                    tint = TextPrimary
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(SurfaceWhite.copy(alpha = 0.9f))
+                                    .clickable {
+                                        val message = if (isFavorite) {
+                                            "Retiré des favoris"
+                                        } else {
+                                            "Ajouté aux favoris"
+                                        }
+                                        viewModel.toggleFavorite()
+                                        android.widget.Toast
+                                            .makeText(context, message, android.widget.Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                                    .padding(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) {
+                                        Icons.Outlined.Favorite
+                                    } else {
+                                        Icons.Outlined.FavoriteBorder
+                                    },
+                                    contentDescription = "Favori",
+                                    tint = if (isFavorite) ErrorRed else TextPrimary
+                                )
+                            }
                         }
+
 
                         Column(
                             modifier = Modifier
