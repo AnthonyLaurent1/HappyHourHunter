@@ -34,12 +34,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailState
-import com.supdevinci.happyhourhunter.viewmodel.MainViewModel
+import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
+import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 
 @Composable
 fun CocktailDetailScreen(
-    viewModel: MainViewModel,
+    viewModel: CocktailDetailViewModel,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -183,24 +183,26 @@ private fun DetailTag(text: String) {
 
 @Composable
 private fun IngredientRow(name: String, measure: String) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(Color(0xFFFFF2F2))
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(14.dp)
     ) {
-        Text(text = name, fontWeight = FontWeight.Medium)
-
         Text(
-            text = if (measure.isNotBlank()) {
-                "$name - ${measure.trim()}"
-            } else {
-                name
-            },
+            text = name.trim(),
             fontWeight = FontWeight.Medium
         )
+
+        if (measure.isNotBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = measure.trim(),
+                color = Color(0xFF666666)
+            )
+        }
     }
 }
+
 

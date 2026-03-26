@@ -1,4 +1,4 @@
-package com.supdevinci.happyhourhunter.viewmodel
+package com.supdevinci.happyhourhunter.viewmodel.states
 
 import com.supdevinci.happyhourhunter.model.Drink
 

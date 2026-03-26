@@ -22,12 +22,17 @@ import com.google.android.gms.location.Priority
 import com.supdevinci.happyhourhunter.ui.theme.HappyHourHunterTheme
 import com.supdevinci.happyhourhunter.view.CocktailDetailScreen
 import com.supdevinci.happyhourhunter.view.MainScreen
-import com.supdevinci.happyhourhunter.viewmodel.MainViewModel
+import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
+import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
+import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: MainViewModel by viewModels()
+    private val weatherViewModel: WeatherCocktailViewModel by viewModels()
+    private val detailViewModel: CocktailDetailViewModel by viewModels()
+    private val searchViewModel: CocktailSearchViewModel by viewModels()
+
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
 
     private val requestPermission = registerForActivityResult(
@@ -50,15 +55,16 @@ class MainActivity : ComponentActivity() {
             HappyHourHunterTheme {
                 if (selectedCocktailId == null) {
                     MainScreen(
-                        viewModel = viewModel,
+                        weatherViewModel = weatherViewModel,
+                        searchViewModel = searchViewModel,
                         onCocktailClick = { id ->
                             selectedCocktailId = id
-                            viewModel.fetchCocktailDetail(id)
+                            detailViewModel.fetchCocktailDetail(id)
                         }
                     )
                 } else {
                     CocktailDetailScreen(
-                        viewModel = viewModel,
+                        viewModel = detailViewModel,
                         onBack = { selectedCocktailId = null }
                     )
                 }
@@ -85,7 +91,7 @@ class MainActivity : ComponentActivity() {
             null
         ).addOnSuccessListener { location ->
             location?.let {
-                viewModel.fetchCocktailsForLocation(
+                weatherViewModel.fetchCocktailsForLocation(
                     lat = it.latitude,
                     lon = it.longitude,
                     city = getCityName(it.latitude, it.longitude)
