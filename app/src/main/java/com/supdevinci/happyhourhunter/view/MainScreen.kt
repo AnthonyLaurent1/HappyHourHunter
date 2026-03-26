@@ -62,26 +62,11 @@ fun MainScreen(
 
     when (val currentState = state) {
         is CocktailWeatherState.Loading -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            LoadingContent(modifier = modifier)
         }
 
         is CocktailWeatherState.Error -> {
-            Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = currentState.message,
-                    color = ErrorRed
-                )
-            }
+            ErrorContent(message = currentState.message, modifier = modifier)
         }
 
         is CocktailWeatherState.Success -> {
@@ -98,132 +83,179 @@ fun MainScreen(
             }
 
             if (showCityDialog) {
-                AlertDialog(
-                    onDismissRequest = {
+                ChangeCityDialog(
+                    cityInput = cityInput,
+                    citySearchError = citySearchError,
+                    isCityLoading = isCityLoading,
+                    onCityInputChange = {
+                        cityInput = it
+                        if (citySearchError != null) {
+                            weatherViewModel.clearCitySearchError()
+                        }
+                    },
+                    onConfirm = {
+                        weatherViewModel.fetchCocktailsForCity(cityInput.trim())
+                    },
+                    onDismiss = {
                         showCityDialog = false
                         weatherViewModel.clearCitySearchError()
                     },
-                    title = {
-                        Text(
-                            text = "Changer de ville",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(
-                                value = cityInput,
-                                onValueChange = {
-                                    cityInput = it
-                                    if (citySearchError != null) {
-                                        weatherViewModel.clearCitySearchError()
-                                    }
-                                },
-                                singleLine = true,
-                                placeholder = { Text("Ex: Paris") },
-                                isError = citySearchError != null,
-                                enabled = !isCityLoading,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            if (citySearchError != null) {
-                                Text(
-                                    text = citySearchError!!,
-                                    color = ErrorRed,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                val started = weatherViewModel.fetchCocktailsForCity(cityInput.trim())
-                                if (started && citySearchError == null) {
-                                    showCityDialog = false
-                                }
-                            },
-                            enabled = !isCityLoading
-                        ) {
-                            if (isCityLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.height(18.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text("Valider")
-                            }
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                showCityDialog = false
-                                weatherViewModel.clearCitySearchError()
-                                cityInput = currentState.city
-                            },
-                            enabled = !isCityLoading
-                        ) {
-                            Text("Annuler")
-                        }
+                    onCancel = {
+                        showCityDialog = false
+                        weatherViewModel.clearCitySearchError()
+                        cityInput = currentState.city
                     }
                 )
             }
 
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
-            ) {
-                Column {
+            MainSuccessContent(state = currentState, modifier = modifier, onWeatherHeaderClick = {
+                    cityInput = currentState.city
+                    weatherViewModel.clearCitySearchError()
+                    showCityDialog = true
+                },
+                onCocktailClick = onCocktailClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingContent(modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorContent(message: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = message, color = ErrorRed)
+    }
+}
+
+@Composable
+private fun MainSuccessContent(
+    state: CocktailWeatherState.Success,
+    modifier: Modifier = Modifier,
+    onWeatherHeaderClick: () -> Unit,
+    onCocktailClick: (String) -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
+    ) {
+        ScreenHeader()
+
+        WeatherHeader(
+            city = state.city,
+            weather = state.weather,
+            temperature = state.temperature,
+            onClick = onWeatherHeaderClick
+        )
+
+        RecommendationBanner(
+            weather = state.weather,
+            temperature = state.temperature
+        )
+
+        Text(
+            text = "Cocktails populaires pour un temps ${state.weather}",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        CocktailGrid(cocktails = state.cocktails.take(4), onCocktailClick = onCocktailClick)
+    }
+}
+
+@Composable
+private fun ScreenHeader() {
+    Column {
+        Text(text = "Découvrir", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Trouvez votre cocktail parfait",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextSecondary
+        )
+    }
+}
+
+@Composable
+private fun ChangeCityDialog(
+    cityInput: String,
+    citySearchError: String?,
+    isCityLoading: Boolean,
+    onCityInputChange: (String) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    onCancel: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Changer de ville", style = MaterialTheme.typography.titleLarge)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = cityInput,
+                    onValueChange = onCityInputChange,
+                    singleLine = true,
+                    placeholder = { Text("Ex: Paris") },
+                    isError = citySearchError != null,
+                    enabled = !isCityLoading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (citySearchError != null) {
                     Text(
-                        text = "Découvrir",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    Text(
-                        text = "Trouvez votre cocktail parfait",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        text = citySearchError,
+                        color = ErrorRed,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-
-                WeatherHeader(
-                    city = currentState.city,
-                    weather = currentState.weather,
-                    temperature = currentState.temperature,
-                    onClick = {
-                        cityInput = currentState.city
-                        weatherViewModel.clearCitySearchError()
-                        showCityDialog = true
-                    }
-                )
-
-                RecommendationBanner(
-                    weather = currentState.weather,
-                    temperature = currentState.temperature
-                )
-
-                Text(
-                    text = "Cocktails populaires pour un temps ${currentState.weather}",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(420.dp)
-                ) {
-                    items(currentState.cocktails.take(4)) { drink ->
-                        CocktailCard(drink = drink) {
-                            onCocktailClick(drink.idDrink)
-                        }
-                    }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = !isCityLoading) {
+                if (isCityLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.height(18.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Valider")
                 }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel, enabled = !isCityLoading) {
+                Text("Annuler")
+            }
+        }
+    )
+}
+
+@Composable
+private fun CocktailGrid(cocktails: List<Drink>, onCocktailClick: (String) -> Unit) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(420.dp)
+    ) {
+        items(cocktails) { drink ->
+            CocktailCard(drink = drink) {
+                onCocktailClick(drink.idDrink)
             }
         }
     }
@@ -298,11 +330,7 @@ private fun RecommendationBanner(weather: String, temperature: Double) {
             .padding(22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = message,
-            color = SurfaceWhite,
-            style = MaterialTheme.typography.bodyLarge
-        )
+        Text(text = message, color = SurfaceWhite, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
@@ -326,10 +354,7 @@ fun CocktailCard(drink: Drink, onClick: () -> Unit) {
         )
 
         Column(Modifier.padding(12.dp)) {
-            Text(
-                text = drink.strDrink,
-                style = MaterialTheme.typography.titleLarge
-            )
+            Text(text = drink.strDrink, style = MaterialTheme.typography.titleLarge)
             drink.strCategory?.let {
                 Text(
                     text = traductionCategory(it),
