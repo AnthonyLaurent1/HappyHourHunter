@@ -31,6 +31,7 @@ import com.supdevinci.happyhourhunter.view.navigation.CocktailNavHost
 import com.supdevinci.happyhourhunter.view.navigation.Routes
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
+import com.supdevinci.happyhourhunter.viewmodel.FavoritesViewModel
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 import java.util.Locale
 
@@ -39,6 +40,8 @@ class MainActivity : ComponentActivity() {
     private val weatherViewModel: WeatherCocktailViewModel by viewModels()
     private val detailViewModel: CocktailDetailViewModel by viewModels()
     private val searchViewModel: CocktailSearchViewModel by viewModels()
+    private val favoritesViewModel: FavoritesViewModel by viewModels()
+
 
     private val fusedLocationClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
@@ -92,6 +95,7 @@ class MainActivity : ComponentActivity() {
                         weatherViewModel = weatherViewModel,
                         searchViewModel = searchViewModel,
                         detailViewModel = detailViewModel,
+                        favoritesViewModel = favoritesViewModel,
                         modifier = androidx.compose.ui.Modifier.padding(innerPadding)
                     )
                 }

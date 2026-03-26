@@ -14,6 +14,7 @@ import com.supdevinci.happyhourhunter.view.MainScreen
 import com.supdevinci.happyhourhunter.view.SearchScreen
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
+import com.supdevinci.happyhourhunter.viewmodel.FavoritesViewModel
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 
 object Routes {
@@ -29,6 +30,7 @@ fun CocktailNavHost(
     weatherViewModel: WeatherCocktailViewModel,
     searchViewModel: CocktailSearchViewModel,
     detailViewModel: CocktailDetailViewModel,
+    favoritesViewModel: FavoritesViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -55,7 +57,12 @@ fun CocktailNavHost(
         }
 
         composable(Routes.FAVORITES) {
-            FavoritesScreen()
+            FavoritesScreen(
+                favoritesViewModel = favoritesViewModel,
+                onCocktailClick = { id ->
+                    navController.navigate("${Routes.DETAIL}/$id")
+                }
+            )
         }
 
         composable(

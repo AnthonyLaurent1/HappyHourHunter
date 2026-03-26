@@ -19,22 +19,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.supdevinci.happyhourhunter.ui.theme.BackgroundCream
+import com.supdevinci.happyhourhunter.ui.theme.ErrorRed
+import com.supdevinci.happyhourhunter.ui.theme.SurfaceSoftPink
+import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
+import com.supdevinci.happyhourhunter.ui.theme.TextPrimary
+import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
 
@@ -45,10 +53,9 @@ fun CocktailDetailScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.detailState.collectAsStateWithLifecycle()
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
 
-    BackHandler {
-        onBack()
-    }
+    BackHandler { onBack() }
 
     when (val currentState = state) {
         is CocktailDetailState.Loading -> {
@@ -67,7 +74,7 @@ fun CocktailDetailScreen(
             ) {
                 Text(
                     text = currentState.message,
-                    color = Color.Red
+                    color = ErrorRed
                 )
             }
         }
@@ -79,7 +86,7 @@ fun CocktailDetailScreen(
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF8F7F4)),
+                    .background(BackgroundCream),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 item {
@@ -98,7 +105,7 @@ fun CocktailDetailScreen(
                                 .statusBarsPadding()
                                 .padding(16.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.9f))
+                                .background(SurfaceWhite.copy(alpha = 0.9f))
                                 .clickable { onBack() }
                                 .padding(10.dp)
                                 .align(Alignment.TopStart)
@@ -106,7 +113,28 @@ fun CocktailDetailScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                                 contentDescription = "Retour",
-                                tint = Color.Black
+                                tint = TextPrimary
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .statusBarsPadding()
+                                .padding(16.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceWhite.copy(alpha = 0.9f))
+                                .clickable { viewModel.toggleFavorite() }
+                                .padding(10.dp)
+                                .align(Alignment.TopEnd)
+                        ) {
+                            Icon(
+                                imageVector = if (isFavorite) {
+                                    Icons.Outlined.Favorite
+                                } else {
+                                    Icons.Outlined.FavoriteBorder
+                                },
+                                contentDescription = "Favori",
+                                tint = if (isFavorite) ErrorRed else TextPrimary
                             )
                         }
 
@@ -133,8 +161,8 @@ fun CocktailDetailScreen(
 
                             Text(
                                 text = drink.strDrink,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
+                                color = SurfaceWhite,
+                                style = MaterialTheme.typography.headlineMedium
                             )
                         }
                     }
@@ -146,12 +174,12 @@ fun CocktailDetailScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                         shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
                                 text = "Ingredients",
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.headlineMedium
                             )
 
                             Spacer(modifier = Modifier.height(14.dp))
@@ -173,17 +201,20 @@ fun CocktailDetailScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
                         shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
                             Text(
                                 text = "Preparation",
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.headlineMedium
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            Text(text = drink.strInstructions ?: "Aucune instruction")
+                            Text(
+                                text = drink.strInstructions ?: "Aucune instruction",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                         }
                     }
                 }
@@ -197,12 +228,12 @@ private fun DetailTag(text: String) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.White)
+            .background(SurfaceWhite)
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         Text(
             text = text,
-            color = Color(0xFF333333)
+            color = TextPrimary
         )
     }
 }
@@ -213,7 +244,7 @@ private fun IngredientRow(name: String, measure: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFFFFF2F2))
+            .background(SurfaceSoftPink)
             .padding(14.dp)
     ) {
         Text(
@@ -225,7 +256,7 @@ private fun IngredientRow(name: String, measure: String) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = measure.trim(),
-                color = Color(0xFF666666)
+                color = TextSecondary
             )
         }
     }

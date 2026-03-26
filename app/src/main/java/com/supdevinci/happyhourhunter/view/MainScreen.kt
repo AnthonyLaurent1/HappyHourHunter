@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.supdevinci.happyhourhunter.model.Drink
+import com.supdevinci.happyhourhunter.ui.theme.DarkBanner
+import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
+import com.supdevinci.happyhourhunter.ui.theme.TagBackground
+import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailWeatherState
 
@@ -61,7 +66,7 @@ fun MainScreen(
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(currentState.message, color = Color.Red)
+                Text(currentState.message, color = MaterialTheme.colorScheme.error)
             }
         }
 
@@ -69,13 +74,18 @@ fun MainScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF8F7F4))
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 Column {
-                    Text("Découvrir", fontWeight = FontWeight.Bold)
-                    Text("Trouvez votre cocktail parfait", color = Color(0xFF666666))
+                    Text(text = "Découvrir", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = "Trouvez votre cocktail parfait",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary
+                    )
+
                 }
 
                 WeatherHeader(
@@ -90,8 +100,8 @@ fun MainScreen(
                 )
 
                 Text(
-                    text = "Cocktails populaires pour un temps ${currentState.weather}",
-                    fontWeight = FontWeight.Bold
+                    text = "Cocktails populaires temps : ${currentState.weather}",
+                    style = MaterialTheme.typography.titleLarge
                 )
 
                 LazyVerticalGrid(
@@ -119,30 +129,30 @@ private fun WeatherHeader(city: String, weather: String, temperature: Double) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Outlined.Cloud,
             contentDescription = null,
-            tint = Color(0xFF555555)
+            tint = TextSecondary
         )
 
         Spacer(modifier = Modifier.padding(horizontal = 6.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text("${temperature.toInt()}°", fontWeight = FontWeight.Bold)
-            Text(weather.replaceFirstChar { it.uppercase() }, color = Color(0xFF666666))
+            Text(weather.replaceFirstChar { it.uppercase() },  color = TextSecondary)
         }
 
         Text(
             text = city,
             modifier = Modifier
                 .clip(CircleShape)
-                .background(Color(0xFFF1F1F1))
+                .background(TagBackground)
                 .padding(horizontal = 12.dp, vertical = 6.dp),
-            color = Color(0xFF555555)
+            color = TextSecondary
         )
     }
 }
@@ -164,11 +174,11 @@ private fun RecommendationBanner(weather: String, temperature: Double) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color(0xFF1F1F1F))
+            .background(DarkBanner)
             .padding(22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(message, color = Color.White, fontWeight = FontWeight.SemiBold)
+        Text(message, color = SurfaceWhite, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -178,7 +188,7 @@ fun CocktailCard(drink: Drink, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(bottom = 12.dp)
     ) {
@@ -192,10 +202,9 @@ fun CocktailCard(drink: Drink, onClick: () -> Unit) {
         )
 
         Column(Modifier.padding(12.dp)) {
-            Text(drink.strDrink, fontWeight = FontWeight.Bold)
-
+            Text(text = drink.strDrink, style = MaterialTheme.typography.titleLarge)
             drink.strCategory?.let {
-                Text(traductionCategory(it), color = Color(0xFF666666))
+                Text(traductionCategory(it), color = TextSecondary)
             }
         }
     }

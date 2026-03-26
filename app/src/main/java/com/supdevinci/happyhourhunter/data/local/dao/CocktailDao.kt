@@ -15,15 +15,6 @@ interface CocktailDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(cocktail: CocktailEntity): Long
 
-    @Update
-    suspend fun update(cocktail: CocktailEntity)
-
-    @Query("UPDATE cocktails SET deletedAt = :date WHERE id = :id")
-    suspend fun softDelete(id: Int, date: Date)
-
-    @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL")
-    fun getAllVisibleCocktails(): Flow<List<CocktailEntity>>
-
     @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL AND idDrink = :idDrink LIMIT 1")
     suspend fun getByApiId(idDrink: String): CocktailEntity?
 
@@ -32,4 +23,15 @@ interface CocktailDao {
 
     @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL AND name LIKE '%' || :query || '%'")
     suspend fun searchByName(query: String): List<CocktailEntity>
+
+    @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL AND isFavorite = 1")
+    fun getFavoriteCocktails(): kotlinx.coroutines.flow.Flow<List<CocktailEntity>>
+
+    @Query("UPDATE cocktails SET isFavorite = :isFavorite, updatedAt = :updatedAt WHERE idDrink = :idDrink")
+    suspend fun updateFavoriteStatus(
+        idDrink: String,
+        isFavorite: Boolean,
+        updatedAt: java.util.Date
+    )
+
 }
