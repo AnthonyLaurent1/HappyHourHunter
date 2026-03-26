@@ -43,6 +43,10 @@ import com.supdevinci.happyhourhunter.ui.theme.SurfaceSoftPink
 import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
 import com.supdevinci.happyhourhunter.ui.theme.TextPrimary
 import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
+import com.supdevinci.happyhourhunter.utils.traductionCategory
+import com.supdevinci.happyhourhunter.utils.traductionGlass
+import com.supdevinci.happyhourhunter.utils.traductionMeasure
+import com.supdevinci.happyhourhunter.utils.traductionType
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
 
@@ -153,7 +157,7 @@ fun CocktailDetailScreen(
                                     DetailTag(traductionType(type))
                                 }
                                 drink.strGlass?.let { glass ->
-                                    DetailTag(glass)
+                                    DetailTag(traductionGlass(glass))
                                 }
                             }
 
@@ -212,7 +216,9 @@ fun CocktailDetailScreen(
                             Spacer(modifier = Modifier.height(12.dp))
 
                             Text(
-                                text = drink.strInstructions ?: "Aucune instruction",
+                                text = drink.strInstructionsFR?.takeIf { it.isNotBlank() }
+                                    ?: drink.strInstructions?.takeIf { it.isNotBlank() }
+                                    ?: "Aucune instruction",
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -255,7 +261,7 @@ private fun IngredientRow(name: String, measure: String) {
         if (measure.isNotBlank()) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = measure.trim(),
+                text = traductionMeasure(measure.trim()),
                 color = TextSecondary
             )
         }

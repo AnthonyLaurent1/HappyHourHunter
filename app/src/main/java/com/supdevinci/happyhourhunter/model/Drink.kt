@@ -7,6 +7,7 @@ data class Drink(
     val strAlcoholic: String?,
     val strGlass: String?,
     val strInstructions: String?,
+    val strInstructionsFR: String?,
     val strDrinkThumb: String?,
     val strIngredient1: String?,
     val strIngredient2: String?,

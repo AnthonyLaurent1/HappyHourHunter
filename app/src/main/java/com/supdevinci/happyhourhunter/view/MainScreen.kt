@@ -44,6 +44,7 @@ import com.supdevinci.happyhourhunter.ui.theme.ErrorRed
 import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
 import com.supdevinci.happyhourhunter.ui.theme.TagBackground
 import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
+import com.supdevinci.happyhourhunter.utils.traductionCategory
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailWeatherState
 

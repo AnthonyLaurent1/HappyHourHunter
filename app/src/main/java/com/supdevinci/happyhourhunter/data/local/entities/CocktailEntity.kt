@@ -14,6 +14,7 @@ data class CocktailEntity(
     val alcoholic: String?,
     val glass: String?,
     val instructions: String?,
+    val instructionsFr: String?,
     val thumbnail: String?,
     val ingredient1: String?,
     val ingredient2: String?,

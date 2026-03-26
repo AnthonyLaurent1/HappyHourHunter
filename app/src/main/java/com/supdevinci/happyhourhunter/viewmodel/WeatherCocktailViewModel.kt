@@ -32,6 +32,12 @@ class WeatherCocktailViewModel(application: Application) : AndroidViewModel(appl
     private val _isCityLoading = MutableStateFlow(false)
     val isCityLoading: StateFlow<Boolean> = _isCityLoading.asStateFlow()
 
+    private val _isInitialLoading = MutableStateFlow(true)
+    val isInitialLoading: StateFlow<Boolean> = _isInitialLoading.asStateFlow()
+
+    fun finishInitialLoading() {
+        _isInitialLoading.value = false
+    }
     fun fetchCocktailsForLocation(lat: Double, lon: Double, city: String) {
 
         viewModelScope.launch {
@@ -54,6 +60,9 @@ class WeatherCocktailViewModel(application: Application) : AndroidViewModel(appl
                 _state.value = CocktailWeatherState.Error(
                     "Erreur reseau : ${e.message}"
                 )
+            }
+            finally {
+                _isInitialLoading.value = false
             }
         }
     }

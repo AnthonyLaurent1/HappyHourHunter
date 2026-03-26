@@ -11,7 +11,7 @@ import com.supdevinci.happyhourhunter.data.local.entities.CocktailEntity
 
 @Database(
     entities = [CocktailEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converter::class)
@@ -29,7 +29,9 @@ abstract class CocktailDatabase : RoomDatabase() {
                     context.applicationContext,
                     CocktailDatabase::class.java,
                     "cocktail_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration(true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

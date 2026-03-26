@@ -67,48 +67,51 @@ class MainActivity : ComponentActivity() {
             val currentRoute = backStackEntry?.destination?.route
             val favorites by favoritesViewModel.favorites.collectAsStateWithLifecycle()
             val favoritesCount = favorites.size
+            val showBottomBar = currentRoute != Routes.SPLASH && currentRoute?.startsWith(Routes.DETAIL) != true
 
             HappyHourHunterTheme {
                 Scaffold(
                     bottomBar = {
-                        NavigationBar {
-                            NavigationBarItem(
-                                selected = currentRoute == Routes.HOME,
-                                onClick = { navController.navigate(Routes.HOME) },
-                                icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
-                                label = { Text("Accueil") }
-                            )
+                        if (showBottomBar) {
+                            NavigationBar {
+                                NavigationBarItem(
+                                    selected = currentRoute == Routes.HOME,
+                                    onClick = { navController.navigate(Routes.HOME) },
+                                    icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
+                                    label = { Text("Accueil") }
+                                )
 
-                            NavigationBarItem(
-                                selected = currentRoute == Routes.SEARCH,
-                                onClick = { navController.navigate(Routes.SEARCH) },
-                                icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                                label = { Text("Recherche") }
-                            )
+                                NavigationBarItem(
+                                    selected = currentRoute == Routes.SEARCH,
+                                    onClick = { navController.navigate(Routes.SEARCH) },
+                                    icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                                    label = { Text("Recherche") }
+                                )
 
-                            NavigationBarItem(
-                                selected = currentRoute == Routes.FAVORITES,
-                                onClick = { navController.navigate(Routes.FAVORITES) },
-                                icon = {
-                                    BadgedBox(badge = {
-                                            if (favoritesCount > 0) {
-                                                Badge {
-                                                    Text(
-                                                        if (favoritesCount > 9) "9+"
-                                                        else favoritesCount.toString()
-                                                    )
+                                NavigationBarItem(
+                                    selected = currentRoute == Routes.FAVORITES,
+                                    onClick = { navController.navigate(Routes.FAVORITES) },
+                                    icon = {
+                                        BadgedBox(badge = {
+                                                if (favoritesCount > 0) {
+                                                    Badge {
+                                                        Text(
+                                                            if (favoritesCount > 9) "9+"
+                                                            else favoritesCount.toString()
+                                                        )
+                                                    }
                                                 }
                                             }
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.Favorite,
+                                                contentDescription = null)
                                         }
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.Favorite,
-                                            contentDescription = null)
-                                    }
-                                },
-                                label = { Text("Favoris") }
-                            )
+                                    },
+                                    label = { Text("Favoris") }
+                                )
 
+                            }
                         }
                     }
                 ) { innerPadding ->
