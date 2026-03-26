@@ -18,23 +18,29 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.supdevinci.happyhourhunter.model.Drink
 import com.supdevinci.happyhourhunter.ui.theme.DarkBanner
+import com.supdevinci.happyhourhunter.ui.theme.ErrorRed
 import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
 import com.supdevinci.happyhourhunter.ui.theme.TagBackground
 import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
@@ -48,6 +54,11 @@ fun MainScreen(
     onCocktailClick: (String) -> Unit
 ) {
     val state by weatherViewModel.state.collectAsStateWithLifecycle()
+    val citySearchError by weatherViewModel.citySearchError.collectAsStateWithLifecycle()
+    val isCityLoading by weatherViewModel.isCityLoading.collectAsStateWithLifecycle()
+
+    var showCityDialog by remember { mutableStateOf(false) }
+    var cityInput by remember { mutableStateOf("") }
 
     when (val currentState = state) {
         is CocktailWeatherState.Loading -> {
@@ -66,11 +77,99 @@ fun MainScreen(
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(currentState.message, color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = currentState.message,
+                    color = ErrorRed
+                )
             }
         }
 
         is CocktailWeatherState.Success -> {
+            LaunchedEffect(currentState.city) {
+                if (!showCityDialog) {
+                    cityInput = currentState.city
+                }
+            }
+
+            LaunchedEffect(isCityLoading, citySearchError, currentState.city) {
+                if (!isCityLoading && citySearchError == null && showCityDialog) {
+                    showCityDialog = false
+                }
+            }
+
+            if (showCityDialog) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showCityDialog = false
+                        weatherViewModel.clearCitySearchError()
+                    },
+                    title = {
+                        Text(
+                            text = "Changer de ville",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = cityInput,
+                                onValueChange = {
+                                    cityInput = it
+                                    if (citySearchError != null) {
+                                        weatherViewModel.clearCitySearchError()
+                                    }
+                                },
+                                singleLine = true,
+                                placeholder = { Text("Ex: Paris") },
+                                isError = citySearchError != null,
+                                enabled = !isCityLoading,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            if (citySearchError != null) {
+                                Text(
+                                    text = citySearchError!!,
+                                    color = ErrorRed,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val started = weatherViewModel.fetchCocktailsForCity(cityInput.trim())
+                                if (started && citySearchError == null) {
+                                    showCityDialog = false
+                                }
+                            },
+                            enabled = !isCityLoading
+                        ) {
+                            if (isCityLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.height(18.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Valider")
+                            }
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showCityDialog = false
+                                weatherViewModel.clearCitySearchError()
+                                cityInput = currentState.city
+                            },
+                            enabled = !isCityLoading
+                        ) {
+                            Text("Annuler")
+                        }
+                    }
+                )
+            }
+
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -79,19 +178,26 @@ fun MainScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 Column {
-                    Text(text = "Découvrir", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = "Découvrir",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
                     Text(
                         text = "Trouvez votre cocktail parfait",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
-
                 }
 
                 WeatherHeader(
                     city = currentState.city,
                     weather = currentState.weather,
-                    temperature = currentState.temperature
+                    temperature = currentState.temperature,
+                    onClick = {
+                        cityInput = currentState.city
+                        weatherViewModel.clearCitySearchError()
+                        showCityDialog = true
+                    }
                 )
 
                 RecommendationBanner(
@@ -100,7 +206,7 @@ fun MainScreen(
                 )
 
                 Text(
-                    text = "Cocktails populaires temps : ${currentState.weather}",
+                    text = "Cocktails populaires pour un temps ${currentState.weather}",
                     style = MaterialTheme.typography.titleLarge
                 )
 
@@ -124,12 +230,18 @@ fun MainScreen(
 }
 
 @Composable
-private fun WeatherHeader(city: String, weather: String, temperature: Double) {
+private fun WeatherHeader(
+    city: String,
+    weather: String,
+    temperature: Double,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(SurfaceWhite)
+            .clickable(onClick = onClick)
             .padding(18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -142,8 +254,15 @@ private fun WeatherHeader(city: String, weather: String, temperature: Double) {
         Spacer(modifier = Modifier.padding(horizontal = 6.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text("${temperature.toInt()}°", fontWeight = FontWeight.Bold)
-            Text(weather.replaceFirstChar { it.uppercase() },  color = TextSecondary)
+            Text(
+                text = "${temperature.toInt()}°",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Text(
+                text = weather.replaceFirstChar { it.uppercase() },
+                color = TextSecondary,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
 
         Text(
@@ -152,7 +271,8 @@ private fun WeatherHeader(city: String, weather: String, temperature: Double) {
                 .clip(CircleShape)
                 .background(TagBackground)
                 .padding(horizontal = 12.dp, vertical = 6.dp),
-            color = TextSecondary
+            color = TextSecondary,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
@@ -178,7 +298,11 @@ private fun RecommendationBanner(weather: String, temperature: Double) {
             .padding(22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(message, color = SurfaceWhite, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = message,
+            color = SurfaceWhite,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
 
@@ -202,9 +326,16 @@ fun CocktailCard(drink: Drink, onClick: () -> Unit) {
         )
 
         Column(Modifier.padding(12.dp)) {
-            Text(text = drink.strDrink, style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = drink.strDrink,
+                style = MaterialTheme.typography.titleLarge
+            )
             drink.strCategory?.let {
-                Text(traductionCategory(it), color = TextSecondary)
+                Text(
+                    text = traductionCategory(it),
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
