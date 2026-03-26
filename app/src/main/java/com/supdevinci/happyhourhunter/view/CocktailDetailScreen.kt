@@ -1,5 +1,6 @@
 package com.supdevinci.happyhourhunter.view
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
+import com.supdevinci.happyhourhunter.viewmodel.states.CocktailDetailState
 
 @Composable
 fun CocktailDetailScreen(
@@ -44,6 +45,10 @@ fun CocktailDetailScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.detailState.collectAsStateWithLifecycle()
+
+    BackHandler {
+        onBack()
+    }
 
     when (val currentState = state) {
         is CocktailDetailState.Loading -> {
@@ -60,12 +65,16 @@ fun CocktailDetailScreen(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = currentState.message, color = Color.Red)
+                Text(
+                    text = currentState.message,
+                    color = Color.Red
+                )
             }
         }
 
         is CocktailDetailState.Success -> {
             val drink = currentState.drink
+            val ingredients = drink.ingredientsWithMeasures()
 
             LazyColumn(
                 modifier = modifier
@@ -109,9 +118,15 @@ fun CocktailDetailScreen(
                                 .align(Alignment.BottomStart)
                         ) {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                drink.strCategory?.let { DetailTag(traductionCategory(it)) }
-                                drink.strAlcoholic?.let { DetailTag(traductionType(it)) }
-                                drink.strGlass?.let { DetailTag(it) }
+                                drink.strCategory?.let { category ->
+                                    DetailTag(traductionCategory(category))
+                                }
+                                drink.strAlcoholic?.let { type ->
+                                    DetailTag(traductionType(type))
+                                }
+                                drink.strGlass?.let { glass ->
+                                    DetailTag(glass)
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -134,12 +149,18 @@ fun CocktailDetailScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
-                            Text(text = "Ingredients", fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Ingredients",
+                                fontWeight = FontWeight.Bold
+                            )
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            drink.ingredientsWithMeasures().forEach { (ingredient,measure) ->
-                                IngredientRow(name = ingredient, measure = measure ?: "")
+                            ingredients.forEach { item ->
+                                IngredientRow(
+                                    name = item.first,
+                                    measure = item.second ?: ""
+                                )
                                 Spacer(modifier = Modifier.height(10.dp))
                             }
                         }
@@ -155,8 +176,13 @@ fun CocktailDetailScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(modifier = Modifier.padding(18.dp)) {
-                            Text(text = "Preparation", fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Preparation",
+                                fontWeight = FontWeight.Bold
+                            )
+
                             Spacer(modifier = Modifier.height(12.dp))
+
                             Text(text = drink.strInstructions ?: "Aucune instruction")
                         }
                     }
@@ -204,5 +230,3 @@ private fun IngredientRow(name: String, measure: String) {
         }
     }
 }
-
-

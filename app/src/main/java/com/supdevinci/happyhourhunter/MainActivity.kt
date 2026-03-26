@@ -6,22 +6,29 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.supdevinci.happyhourhunter.ui.theme.HappyHourHunterTheme
-import com.supdevinci.happyhourhunter.view.CocktailDetailScreen
-import com.supdevinci.happyhourhunter.view.MainScreen
+import com.supdevinci.happyhourhunter.view.navigation.CocktailNavHost
+import com.supdevinci.happyhourhunter.view.navigation.Routes
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
@@ -33,7 +40,9 @@ class MainActivity : ComponentActivity() {
     private val detailViewModel: CocktailDetailViewModel by viewModels()
     private val searchViewModel: CocktailSearchViewModel by viewModels()
 
-    private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
 
     private val requestPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -41,31 +50,49 @@ class MainActivity : ComponentActivity() {
         if (granted) getCurrentLocation()
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         checkLocationPermission()
-        setContent {
-            var selectedCocktailId by remember { mutableStateOf<String?>(null) }
 
-            BackHandler(enabled = selectedCocktailId != null) {
-                selectedCocktailId = null
-            }
+        setContent {
+            val navController = rememberNavController()
+            val backStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = backStackEntry?.destination?.route
+
             HappyHourHunterTheme {
-                if (selectedCocktailId == null) {
-                    MainScreen(
+                Scaffold(
+                    bottomBar = {
+                        NavigationBar {
+                            NavigationBarItem(
+                                selected = currentRoute == Routes.HOME,
+                                onClick = { navController.navigate(Routes.HOME) },
+                                icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
+                                label = { Text("Accueil") }
+                            )
+
+                            NavigationBarItem(
+                                selected = currentRoute == Routes.SEARCH,
+                                onClick = { navController.navigate(Routes.SEARCH) },
+                                icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                                label = { Text("Recherche") }
+                            )
+
+                            NavigationBarItem(
+                                selected = currentRoute == Routes.FAVORITES,
+                                onClick = { navController.navigate(Routes.FAVORITES) },
+                                icon = { Icon(Icons.Outlined.Favorite, contentDescription = null) },
+                                label = { Text("Favoris") }
+                            )
+                        }
+                    }
+                ) { innerPadding ->
+                    CocktailNavHost(
+                        navController = navController,
                         weatherViewModel = weatherViewModel,
                         searchViewModel = searchViewModel,
-                        onCocktailClick = { id ->
-                            selectedCocktailId = id
-                            detailViewModel.fetchCocktailDetail(id)
-                        }
-                    )
-                } else {
-                    CocktailDetailScreen(
-                        viewModel = detailViewModel,
-                        onBack = { selectedCocktailId = null }
+                        detailViewModel = detailViewModel,
+                        modifier = androidx.compose.ui.Modifier.padding(innerPadding)
                     )
                 }
             }
@@ -73,7 +100,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(
+        if (
+            ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED

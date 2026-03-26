@@ -18,16 +18,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,20 +33,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.supdevinci.happyhourhunter.model.Drink
-import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
 import com.supdevinci.happyhourhunter.viewmodel.states.CocktailWeatherState
 
 @Composable
 fun MainScreen(
     weatherViewModel: WeatherCocktailViewModel,
-    searchViewModel: CocktailSearchViewModel,
     modifier: Modifier = Modifier,
     onCocktailClick: (String) -> Unit
 ) {
     val state by weatherViewModel.state.collectAsStateWithLifecycle()
-    val searchResults by searchViewModel.searchResults.collectAsStateWithLifecycle()
-    var searchQuery by remember { mutableStateOf("") }
 
     when (val currentState = state) {
         is CocktailWeatherState.Loading -> {
@@ -98,58 +89,22 @@ fun MainScreen(
                     temperature = currentState.temperature
                 )
 
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                        searchViewModel.searchCocktails(it)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = {
-                        Icon(Icons.Outlined.Search, contentDescription = null)
-                    },
-                    placeholder = { Text("Rechercher un cocktail...") },
-                    shape = RoundedCornerShape(18.dp)
+                Text(
+                    text = "Cocktails populaires pour un temps ${currentState.weather}",
+                    fontWeight = FontWeight.Bold
                 )
 
-                if (searchQuery.isNotBlank()) {
-                    Text("Résultats", fontWeight = FontWeight.Bold)
-
-                    if (searchResults.isEmpty()) {
-                        Text("Aucun cocktail trouvé", color = Color(0xFF666666))
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(420.dp)
-                        ) {
-                            items(searchResults.take(10)) { drink ->
-                                CocktailCard(drink = drink) {
-                                    onCocktailClick(drink.idDrink)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (searchQuery.isBlank()) {
-                    Text("Cocktails populaires pour un temps ${currentState.weather}", fontWeight = FontWeight.Bold)
-
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(420.dp)
-                    ) {
-                        items(currentState.cocktails.take(4)) { drink ->
-                            CocktailCard(drink = drink) {
-                                onCocktailClick(drink.idDrink)
-                            }
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp)
+                ) {
+                    items(currentState.cocktails.take(4)) { drink ->
+                        CocktailCard(drink = drink) {
+                            onCocktailClick(drink.idDrink)
                         }
                     }
                 }
@@ -218,7 +173,7 @@ private fun RecommendationBanner(weather: String, temperature: Double) {
 }
 
 @Composable
-private fun CocktailCard(drink: Drink, onClick: () -> Unit) {
+fun CocktailCard(drink: Drink, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
