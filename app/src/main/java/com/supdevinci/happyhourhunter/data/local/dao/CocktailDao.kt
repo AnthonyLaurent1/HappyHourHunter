@@ -12,6 +12,9 @@ interface CocktailDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(cocktail: CocktailEntity): Long
 
+    @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL ORDER BY name ASC")
+    suspend fun getAllCocktails(): List<CocktailEntity>
+
     @Query("SELECT * FROM cocktails WHERE deletedAt IS NULL AND idDrink = :idDrink LIMIT 1")
     suspend fun getByApiId(idDrink: String): CocktailEntity?
 

@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material3.AlertDialog
@@ -43,6 +43,7 @@ import com.supdevinci.happyhourhunter.ui.theme.DarkBanner
 import com.supdevinci.happyhourhunter.ui.theme.ErrorRed
 import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
 import com.supdevinci.happyhourhunter.ui.theme.TagBackground
+import com.supdevinci.happyhourhunter.ui.theme.TextPrimary
 import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
 import com.supdevinci.happyhourhunter.utils.traductionCategory
 import com.supdevinci.happyhourhunter.viewmodel.WeatherCocktailViewModel
@@ -200,8 +201,14 @@ private fun ChangeCityDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = DarkBanner,
+        titleContentColor = TextPrimary,
+        textContentColor = TextPrimary,
         title = {
-            Text(text = "Changer de ville", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = "Changer de ville",
+                style = MaterialTheme.typography.titleLarge,
+            )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -212,7 +219,7 @@ private fun ChangeCityDialog(
                     placeholder = { Text("Ex: Paris") },
                     isError = citySearchError != null,
                     enabled = !isCityLoading,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 if (citySearchError != null) {
@@ -246,21 +253,56 @@ private fun ChangeCityDialog(
 
 @Composable
 private fun CocktailGrid(cocktails: List<Drink>, onCocktailClick: (String) -> Unit) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(420.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        items(cocktails) { drink ->
-            CocktailCard(drink = drink) {
+        items(cocktails.take(4)) { drink ->
+            CocktailCardCarousel(drink = drink) {
                 onCocktailClick(drink.idDrink)
             }
         }
     }
 }
+
+
+@Composable
+private fun CocktailCardCarousel(drink: Drink, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(220.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
+            .padding(bottom = 12.dp)
+    ) {
+        AsyncImage(
+            model = drink.strDrinkThumb,
+            contentDescription = drink.strDrink,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            contentScale = ContentScale.Crop
+        )
+
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                text = drink.strDrink,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            drink.strCategory?.let {
+                Text(
+                    text = traductionCategory(it),
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    }
+}
+
+
 
 @Composable
 private fun WeatherHeader(
@@ -331,7 +373,7 @@ private fun RecommendationBanner(weather: String, temperature: Double) {
             .padding(22.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = message, color = SurfaceWhite, style = MaterialTheme.typography.bodyLarge)
+        Text(text = message, color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

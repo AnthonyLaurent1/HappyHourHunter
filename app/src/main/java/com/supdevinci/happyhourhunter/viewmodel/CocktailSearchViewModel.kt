@@ -19,10 +19,19 @@ class CocktailSearchViewModel(application: Application) : AndroidViewModel(appli
     private val _searchResults = MutableStateFlow<List<Drink>>(emptyList())
     val searchResults: StateFlow<List<Drink>> = _searchResults.asStateFlow()
 
+    init {
+        loadAllCocktails()
+    }
+
+    fun loadAllCocktails() {
+        viewModelScope.launch {
+            _searchResults.value = cocktailDao.getAllCocktails().map { it.toDrink() }
+        }
+    }
     fun searchCocktails(name: String) {
         viewModelScope.launch {
             if (name.isBlank()) {
-                _searchResults.value = emptyList()
+                _searchResults.value = cocktailDao.getAllCocktails().map { it.toDrink() }
                 return@launch
             }
 
@@ -35,7 +44,7 @@ class CocktailSearchViewModel(application: Application) : AndroidViewModel(appli
 
             try {
                 val response = RetrofitInstance.cocktailApi.searchCocktailsByName(name)
-                val apiResults = response.drinks ?: emptyList()
+                val apiResults = response.drinks
 
                 apiResults.forEach { drink ->
                     if (cocktailDao.getByApiId(drink.idDrink) == null) {

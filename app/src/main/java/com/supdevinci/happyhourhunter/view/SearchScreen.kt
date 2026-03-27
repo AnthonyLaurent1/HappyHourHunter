@@ -3,6 +3,7 @@ package com.supdevinci.happyhourhunter.view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +38,10 @@ fun SearchScreen(
 ) {
     val searchResults by searchViewModel.searchResults.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        searchViewModel.loadAllCocktails()
+    }
 
     Column(
         modifier = Modifier
@@ -63,25 +69,30 @@ fun SearchScreen(
             shape = RoundedCornerShape(18.dp)
         )
 
-        if (searchResults.isEmpty() && searchQuery.isNotBlank()) {
+        if (searchResults.isEmpty()) {
             Text(
-                text = "Aucun cocktail trouvé",
+                text = if (searchQuery.isBlank()) {
+                    "Aucun cocktail en base"
+                } else {
+                    "Aucun cocktail trouvé"
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary
             )
-        }
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(500.dp)
-        ) {
-            items(searchResults) { drink ->
-                CocktailCard(drink = drink) {
-                    onCocktailClick(drink.idDrink)
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(bottom = 12.dp)
+            ) {
+                items(searchResults) { drink ->
+                    CocktailCard(drink = drink) {
+                        onCocktailClick(drink.idDrink)
+                    }
                 }
             }
         }
