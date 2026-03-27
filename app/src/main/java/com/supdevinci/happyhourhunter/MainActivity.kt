@@ -24,6 +24,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.supdevinci.happyhourhunter.ui.theme.HappyHourHunterTheme
+import com.supdevinci.happyhourhunter.utils.AnimatedBackground
 import com.supdevinci.happyhourhunter.view.navigation.CocktailNavHost
 import com.supdevinci.happyhourhunter.view.navigation.Routes
 import com.supdevinci.happyhourhunter.viewmodel.CocktailDetailViewModel
@@ -72,33 +75,45 @@ class MainActivity : ComponentActivity() {
             val showBottomBar = currentRoute != Routes.SPLASH && currentRoute?.startsWith(Routes.DETAIL) != true
 
             HappyHourHunterTheme {
-                Scaffold(
-                    bottomBar = {
-                        if (showBottomBar) {
-                            NavigationBar(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                                tonalElevation = 0.dp
-                            ) {
-                                NavigationBarItem(
-                                    selected = currentRoute == Routes.HOME,
-                                    onClick = { navController.navigate(Routes.HOME) },
-                                    icon = { Icon(Icons.Outlined.Home, contentDescription = null) },
-                                    label = { Text("Accueil") }
-                                )
+                AnimatedBackground {
+                    Scaffold(
+                        containerColor = Color.Transparent,
+                        bottomBar = {
+                            if (showBottomBar) {
+                                NavigationBar(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = MaterialTheme.colorScheme.onSurface,
+                                    tonalElevation = 0.dp
+                                ) {
+                                    NavigationBarItem(
+                                        selected = currentRoute == Routes.HOME,
+                                        onClick = { navController.navigate(Routes.HOME) },
+                                        icon = {
+                                            Icon(
+                                                Icons.Outlined.Home,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        label = { Text("Accueil") }
+                                    )
 
-                                NavigationBarItem(
-                                    selected = currentRoute == Routes.SEARCH,
-                                    onClick = { navController.navigate(Routes.SEARCH) },
-                                    icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                                    label = { Text("Recherche") }
-                                )
+                                    NavigationBarItem(
+                                        selected = currentRoute == Routes.SEARCH,
+                                        onClick = { navController.navigate(Routes.SEARCH) },
+                                        icon = {
+                                            Icon(
+                                                Icons.Outlined.Search,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        label = { Text("Recherche") }
+                                    )
 
-                                NavigationBarItem(
-                                    selected = currentRoute == Routes.FAVORITES,
-                                    onClick = { navController.navigate(Routes.FAVORITES) },
-                                    icon = {
-                                        BadgedBox(badge = {
+                                    NavigationBarItem(
+                                        selected = currentRoute == Routes.FAVORITES,
+                                        onClick = { navController.navigate(Routes.FAVORITES) },
+                                        icon = {
+                                            BadgedBox(badge = {
                                                 if (favoritesCount > 0) {
                                                     Badge {
                                                         Text(
@@ -108,27 +123,29 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 }
                                             }
-                                        ) {
-                                            Icon(
-                                                Icons.Outlined.Favorite,
-                                                contentDescription = null)
-                                        }
-                                    },
-                                    label = { Text("Favoris") }
-                                )
+                                            ) {
+                                                Icon(
+                                                    Icons.Outlined.Favorite,
+                                                    contentDescription = null
+                                                )
+                                            }
+                                        },
+                                        label = { Text("Favoris") }
+                                    )
 
+                                }
                             }
                         }
+                    ) { innerPadding ->
+                        CocktailNavHost(
+                            navController = navController,
+                            weatherViewModel = weatherViewModel,
+                            searchViewModel = searchViewModel,
+                            detailViewModel = detailViewModel,
+                            favoritesViewModel = favoritesViewModel,
+                            modifier = Modifier.padding(innerPadding)
+                        )
                     }
-                ) { innerPadding ->
-                    CocktailNavHost(
-                        navController = navController,
-                        weatherViewModel = weatherViewModel,
-                        searchViewModel = searchViewModel,
-                        detailViewModel = detailViewModel,
-                        favoritesViewModel = favoritesViewModel,
-                        modifier = androidx.compose.ui.Modifier.padding(innerPadding)
-                    )
                 }
             }
         }

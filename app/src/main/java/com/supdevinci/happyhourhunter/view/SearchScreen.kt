@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -28,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.supdevinci.happyhourhunter.ui.theme.BackgroundCream
+import com.supdevinci.happyhourhunter.ui.theme.TextPrimary
 import com.supdevinci.happyhourhunter.ui.theme.TextSecondary
 import com.supdevinci.happyhourhunter.viewmodel.CocktailSearchViewModel
 
@@ -46,13 +46,14 @@ fun SearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundCream)
+            .background(BackgroundCream.copy(alpha = 0.72f))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Text(
             text = "Recherche",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            color = TextPrimary
         )
 
         OutlinedTextField(

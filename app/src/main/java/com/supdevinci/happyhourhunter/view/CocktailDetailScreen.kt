@@ -94,7 +94,7 @@ fun CocktailDetailScreen(
             LazyColumn(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(BackgroundCream),
+                    .background(BackgroundCream.copy(alpha = 0.72f)),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 item {

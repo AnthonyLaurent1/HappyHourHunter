@@ -150,11 +150,11 @@ private fun MainSuccessContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        ScreenHeader()
+    ScreenHeader()
 
         WeatherHeader(
             city = state.city,
@@ -170,7 +170,8 @@ private fun MainSuccessContent(
 
         Text(
             text = "Cocktails populaires pour un temps ${state.weather}",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
+            color = TextPrimary
         )
 
         CocktailGrid(cocktails = state.cocktails.take(4), onCocktailClick = onCocktailClick)
@@ -180,7 +181,7 @@ private fun MainSuccessContent(
 @Composable
 private fun ScreenHeader() {
     Column {
-        Text(text = "Découvrir", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Découvrir", style = MaterialTheme.typography.headlineMedium, color = TextPrimary)
         Text(
             text = "Trouvez votre cocktail parfait",
             style = MaterialTheme.typography.bodyMedium,
@@ -288,7 +289,8 @@ private fun CocktailCardCarousel(drink: Drink, onClick: () -> Unit) {
         Column(Modifier.padding(12.dp)) {
             Text(
                 text = drink.strDrink,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary
             )
 
             drink.strCategory?.let {
@@ -331,7 +333,8 @@ private fun WeatherHeader(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "${temperature.toInt()}°",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary
             )
             Text(
                 text = weather.replaceFirstChar { it.uppercase() },
@@ -397,7 +400,7 @@ fun CocktailCard(drink: Drink, onClick: () -> Unit) {
         )
 
         Column(Modifier.padding(12.dp)) {
-            Text(text = drink.strDrink, style = MaterialTheme.typography.titleLarge)
+            Text(text = drink.strDrink, style = MaterialTheme.typography.titleLarge, color = TextPrimary)
             drink.strCategory?.let {
                 Text(
                     text = traductionCategory(it),

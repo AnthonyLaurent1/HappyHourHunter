@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     kapt("androidx.room:room-compiler:2.8.4")
     implementation("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

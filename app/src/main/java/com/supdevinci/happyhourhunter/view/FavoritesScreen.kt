@@ -32,6 +32,7 @@ import com.supdevinci.happyhourhunter.model.Drink
 import com.supdevinci.happyhourhunter.ui.theme.BackgroundCream
 import com.supdevinci.happyhourhunter.ui.theme.ErrorRed
 import com.supdevinci.happyhourhunter.ui.theme.SurfaceWhite
+import com.supdevinci.happyhourhunter.ui.theme.TextPrimary
 import com.supdevinci.happyhourhunter.viewmodel.FavoritesViewModel
 
 @Composable
@@ -44,17 +45,18 @@ fun FavoritesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundCream)
+            .background(BackgroundCream.copy(alpha = 0.72f))
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         Text(
             text = "Favoris",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            color = TextPrimary
         )
 
         if (favorites.isEmpty()) {
-            Text("Aucun favori")
+            Text("Aucun favori", color = TextPrimary)
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -102,7 +104,8 @@ private fun FavoriteCocktailCard(
             Column(Modifier.padding(12.dp)) {
                 Text(
                     text = drink.strDrink,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = TextPrimary
                 )
             }
         }
